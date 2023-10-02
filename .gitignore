@@ -1,0 +1,4 @@
+ansible.log
+facts_cache/
+configs/*.yaml
+configs/wireguard/*

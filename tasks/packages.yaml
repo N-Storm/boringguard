@@ -1,0 +1,69 @@
+---
+  - name: Setting distro dependant vars
+    set_fact:
+      repos_category: "{{ 'deb' if (ansible_facts['distribution'] == 'Debian' or ansible_facts['distribution'] == 'Ubuntu') \
+                     else 'rpm' if (ansible_facts['distribution'] == 'CentOS' or ansible_facts['distribution'] == 'AlmaLinux' \
+                                or  ansible_facts['distribution'] == 'Rocky'  or ansible_facts['distribution'] == 'OracleLinux') \
+                        else '' }}"
+      arch: "{{ 'x86_64'  if (ansible_facts['architecture'] == 'x86_64') \
+           else 'aarch64' if (ansible_facts['architecture'] == 'aarch64') \
+           else 'armv7'   if (ansible_facts['architecture'] == 'armv7l' or ansible_facts['architecture'] == 'armv7hl' or ansible_facts['architecture'] == 'armv7hnl') \
+           else '' }}"
+    when: repos_category is not defined or arch is not defined
+    failed_when: repos_category == '' or arch == ''
+    tags:
+      - boringguard
+      - boringguard_facts
+      - boringguard_packages
+
+  - block:
+
+    - name: Install packages (1/3)
+      package:
+        update_cache: true
+        state: latest
+        name: "{{ packages.needed[repos_category] | default([]) }}"
+        force: "{{ (repos_category == 'deb') | ternary(true, omit) }}"
+        install_recommends: "{{ (repos_category == 'deb') | ternary(false, omit) }}"
+      diff: true
+
+    - name: Install packages (2/3)
+      package:
+        update_cache: true
+        state: latest
+        name: "{{ packages.needed.common | default([]) }}"
+        force: "{{ (repos_category == 'deb') | ternary(true, omit) }}"
+        install_recommends: "{{ (repos_category == 'deb') | ternary(false, omit) }}"
+      diff: true
+
+    - name: Copy package files to the remote host
+      copy:
+        src: "{{ item }}"
+        dest: /tmp
+      with_items: "{{ packages.needed.from_files[arch][repos_category] }} "
+
+    - name: Install packages from files (3/3)
+      package:
+        update_cache: true
+        state: present
+        deb: "{{ (repos_category == 'deb') | ternary(item, omit) }}"
+        name: "{{ (repos_category == 'rpm') | ternary(item, omit) }}"
+        force: "{{ (repos_category == 'deb') | ternary(true, omit) }}"
+        validate_certs: "{{ (repos_category == 'rpm') | ternary(true, omit) }}"
+        disable_gpg_check: "{{ (repos_category == 'rpm') | ternary(true, omit) }}"
+      with_items: "{{ [ '/tmp/' ] | product(packages.needed.from_files[arch][repos_category]) | map('join') | list }} "
+      diff: true
+      become: true
+
+    - name: Delete temp packages files from the remote host
+      file:
+        path: "/tmp/{{ item }}"
+        state: absent
+      with_items: "{{ packages.needed.from_files[arch][repos_category] }} "
+
+# BLOCK PARAMETERS #
+    become: true
+    tags:
+      - boringguard
+      - boringguard_packages
+# ENDBLOCK #

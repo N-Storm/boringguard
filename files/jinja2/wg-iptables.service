@@ -1,0 +1,18 @@
+# ANSIBLE VPS_CONFIGURATION CONFIGURED
+[Unit]
+Before=network.target
+[Service]
+Type=oneshot
+ExecStart=/usr/sbin/iptables -t nat -A POSTROUTING -s 10.7.0.0/24 -d {{ wg.nat_ip }} -j RETURN
+ExecStart=/usr/sbin/iptables -t nat -A POSTROUTING -s 10.7.0.0/24 ! -d 10.7.0.0/24 -j SNAT --to-source {{ wg.nat_ip }}
+ExecStart=/usr/sbin/iptables -I INPUT -p udp --dport {{ wg.port }} -j ACCEPT
+ExecStart=/usr/sbin/iptables -I FORWARD -s 10.7.0.0/24 -j ACCEPT
+ExecStart=/usr/sbin/iptables -I FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT
+ExecStop=/usr/sbin/iptables -t nat -D POSTROUTING -s 10.7.0.0/24 -d {{ wg.nat_ip }} -j RETURN
+ExecStop=/usr/sbin/iptables -t nat -D POSTROUTING -s 10.7.0.0/24 ! -d 10.7.0.0/24 -j SNAT --to-source {{ wg.nat_ip }}
+ExecStop=/usr/sbin/iptables -D INPUT -p udp --dport {{ wg.port }} -j ACCEPT
+ExecStop=/usr/sbin/iptables -D FORWARD -s 10.7.0.0/24 -j ACCEPT
+ExecStop=/usr/sbin/iptables -D FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT
+RemainAfterExit=yes
+[Install]
+WantedBy=multi-user.target

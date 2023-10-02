@@ -1,0 +1,11 @@
+---
+# Defaults file for boringguard
+
+# Server port to listen
+wg_port: 51820
+
+# Server interface to listen
+wg_iface: eth0
+
+# Default number of peers to create
+wg_npeers: 1

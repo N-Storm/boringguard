@@ -1,0 +1,146 @@
+---
+  - block:
+
+    - name: Check that client config for host exists already locally
+      local_action:
+        module: stat
+        path: configs/boringguard-cfg-{{ inventory_hostname }}.yaml
+      register: host_configfile
+
+    - name: Include config for host, if it exists already locally
+      include_vars: "configs/boringguard-cfg-{{ inventory_hostname }}.yaml"
+      when: host_configfile.stat.exists
+
+    - block:
+
+      - block:
+
+        - name: Generating server keys
+          shell: "SKEY=$(wg genkey); SPUB=$(echo $SKEY | wg pubkey); echo \"{ skey: $SKEY, spub: $SPUB }\""
+          register: wg_keys
+
+        - name: Checking public IP
+          shell: "curl -m 10 -4Ls icanhazip.com || curl -m 10 -4Ls ip1.dynupdate.no-ip.com"
+          register: wg_discovered_public_ip
+
+        - name: Generating WireGuard peers
+          shell: "echo 'peers:'; for n in $(seq {{ wg_npeers }}); do PSK=$(wg genpsk); CKEY=$(wg genkey); CPUB=$(echo $CKEY | wg pubkey); echo \"  - { name: Peer${n}, ckey: $CKEY, cpub: $CPUB, psk: $PSK }\"; done"
+          register: wg_peers
+
+        - name: Setting WireGuard facts
+          set_fact:
+            wg_newconf: true
+            wg: "{{ wg_keys.stdout | from_yaml | combine(wg_peers.stdout | from_yaml) \
+                                               | combine ({ 'host': wg_host | default(ansible_host), \
+                                                            'iface': wg_iface, \
+                                                            'port': wg_port, \
+                                                            'public_ip': wg_public_ip | default(wg_discovered_public_ip.stdout), \
+                                                            'nat_ip': (wg_use_publicip is defined and wg_use_publicip) | ternary(wg_public_ip | default(wg_discovered_public_ip.stdout), \
+                                                                                                                                 hostvars[inventory_hostname]['ansible_' ~ wg_iface].ipv4.address) }) }}"
+
+# BLOCK PARAMETERS #
+        when: wg is not defined
+# ENDBLOCK #
+
+      - name: Populating WireGuard peers keys
+        shell: "echo 'peers: '; {% for item in wg.peers %}PSK=$(wg genpsk); CKEY={{ item.ckey | default('$(wg genkey)') }}; CPUB=$(echo $CKEY | wg pubkey); echo \" - { name: {{ item.name }}, ipnum: {{ loop.index + 1 }}, ckey: $CKEY, cpub: $CPUB, psk: {{ item.psk | default('$PSK') }} } \"\n {% endfor %}"
+        register: wg_peers
+
+      - name: Updating WireGuard peers
+        set_fact:
+          wg: "{{ wg | combine(wg_peers.stdout | from_yaml) }}"
+
+      - block:
+
+        - name: Generating WireGuard server config from template
+          template:
+            src: files/jinja2/wg0.conf
+            dest: /etc/wireguard/wg0.conf
+            owner: root
+            group: root
+            mode: '0600'
+          notify:
+            - restart wireguard
+            - Saving Wireguard config locally
+
+        - name: Creating SystemD override path
+          file:
+            path: /etc/systemd/system/wg-quick@wg0.service.d
+            state: directory
+            owner: root
+            group: root
+            mode: '755'
+          notify: restart wireguard
+
+        - name: Installing SystemD override for boringtun
+          template:
+            src: files/jinja2/wg-quick-boringtun-override.conf
+            dest: /etc/systemd/system/wg-quick@wg0.service.d/wg-quick-boringtun-override.conf
+            owner: root
+            group: root
+            mode: '0644'
+          notify: restart wireguard
+
+        - name: Installing wg-iptables SystemD service
+          template:
+            src: files/jinja2/wg-iptables.service
+            dest: /etc/systemd/system/wg-iptables.service
+            owner: root
+            group: root
+            mode: '0644'
+          register: wg_iptables_unit
+          notify:
+            - restart wg-iptables
+            - Saving Wireguard config locally
+
+        - name: Stop wg-iptables service without daemon reload to avoid orphanned iptables records
+          systemd:
+            name: wg-iptables
+            enabled: true
+            state: stopped
+            daemon_reload: false
+          when: wg_iptables_unit.changed
+          ignore_errors: true
+
+        - name: Enabling IPv4 & IPv6 forward in sysctl.conf
+          sysctl:
+            name: "{{ item }}"
+            value: '1'
+            sysctl_set: true
+            state: present
+            reload: true
+          loop:
+            - net.ipv4.ip_forward
+            - net.ipv6.conf.all.forwarding
+
+# BLOCK PARAMETERS #
+        become: true
+# ENDBLOCK #
+
+      - name: Generating WireGuard client config from template (locally)
+        local_action:
+          module: template
+          src: files/jinja2/client.conf
+          dest: "configs/wireguard/{{ inventory_hostname }}-{{ item.name }}.conf"
+          mode: '0600'
+          # backup: yes
+        loop: "{{ wg.peers }}"
+        notify: Saving Wireguard config locally
+
+# BLOCK PARAMETERS #
+      when: wg_override_config is defined or not host_configfile.stat.exists or wg is not defined or wg_newconf is defined
+# ENDBLOCK #
+
+    - name: Generating WireGuard QRCode for mobile client
+      local_action:
+        module: shell
+        cmd: "cat configs/wireguard/{{ inventory_hostname }}-{{ item.name }}.conf | grep -v PostUp | tee | qrencode -t ANSIUTF8 -o configs/wireguard/{{ inventory_hostname }}-{{ item.name }}.qrcode.txt && \
+              cat configs/wireguard/{{ inventory_hostname }}-{{ item.name }}.conf | grep -v PostUp | tee | qrencode -t PNG -o configs/wireguard/{{ inventory_hostname }}-{{ item.name }}.qrcode.png"
+        creates: "configs/wireguard/{{ inventory_hostname }}-{{ item.name }}.qrcode.txt"
+      loop: "{{ wg.peers }}"
+
+# BLOCK PARAMETERS #
+    tags:
+      - boringguard
+      - boringguard_config
+# ENDBLOCK #

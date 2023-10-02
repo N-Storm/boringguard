@@ -1,0 +1,25 @@
+---
+
+  - block:
+
+    - name: restart wireguard
+      systemd: name=wg-quick@wg0 enabled=true state=restarted daemon_reload=true
+
+    - name: restart wg-iptables
+      systemd: name=wg-iptables enabled=true state=restarted daemon_reload=true
+
+# BLOCK PARAMETERS #
+    become: true
+# ENDBLOCK #
+
+  - name: Saving Wireguard config locally
+    local_action:
+      module: blockinfile
+      create: true
+      content: "{{ _output | to_nice_yaml(indent=2, sort_keys=false, width=1000) }}"
+      marker: "# {mark} 1_wireguard block"
+      dest: "configs/boringguard-cfg-{{ inventory_hostname }}.yaml"
+      state: present
+      mode: 0600
+    vars:
+      _output: "{{ {'wg': wg} }}"
