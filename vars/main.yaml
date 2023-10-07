@@ -8,6 +8,7 @@ packages:
   needed:
     common:
       - wireguard-tools
+      - curl
     rpm:
       - epel-release
     from_files:
