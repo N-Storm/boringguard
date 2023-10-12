@@ -10,6 +10,13 @@ This role comes with pre-compilled boringtun-cli packages in deb and rpm formats
 in their repositories. But if you don't trust my builds, you can package your own binaries. This role comes with x86_64 and ARM (armv7 hardfloat and aarch64)
 packages. So it's possible to install on SBC like Raspberry Pi, Orange Pi, etc and (for example) Hetzner ARM VPS plans.
 
+Supported architectures
+------------
+
+- x86_64
+- aarch64 (ARM64)
+- ARMv7 Hardfloat
+
 Supported distros
 ------------
 
@@ -44,8 +51,17 @@ Requirements
 Role Variables
 --------------
 
-TODO...
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+These are either set a "weak" defaults or unset. So you can configure them anywhere you like - hostvars, group vars, playbook, etc. 
+Even role vars file. You can also modify defaults file, but it's not recommended.
+
+wg_host: hostname of your server (defaults to ansible hostname).
+wg_port: listen port (default: 51820).
+wg_iface: interface to listen, must specify one (default: eth0).
+wg_npeers: number of peers (clients) to create during initial setup (default: 1).
+
+wg_public_ip: IPv4 address host can be seen on the Internet. If you are behind NAT, this should be still set to correct public IP (default: autodiscover).
+wg_use_public_ip: use public IP instead of IP configured on interface wg_iface for setup (boolean, default: false).
+wg_override_conig: allow doing initial install from scratch, overriding existing config (boolean, default: not set).
 
 Dependencies
 ------------
