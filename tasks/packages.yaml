@@ -53,7 +53,6 @@
         disable_gpg_check: "{{ (repos_category == 'rpm') | ternary(true, omit) }}"
       with_items: "{{ [ '/tmp/' ] | product(packages.needed.from_files[arch][repos_category]) | map('join') | list }} "
       diff: true
-      become: true
 
     - name: Delete temp packages files from the remote host
       file:

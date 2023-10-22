@@ -42,7 +42,7 @@
         when: wg is not defined
 # ENDBLOCK #
 
-      - name: Populating WireGuard peers keys
+      - name: Populating WireGuard peers
         shell: "echo 'peers: '; {% for item in wg.peers %}PSK=$(wg genpsk); CKEY={{ item.ckey | default('$(wg genkey)') }}; CPUB=$(echo $CKEY | wg pubkey); echo \" - { name: {{ item.name }}, ipnum: {{ loop.index + 1 }}, ckey: $CKEY, cpub: $CPUB, psk: {{ item.psk | default('$PSK') }} } \"\n {% endfor %}"
         register: wg_peers
 

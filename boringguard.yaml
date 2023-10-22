@@ -1,8 +1,9 @@
 ---
 - hosts: all
   gather_facts: yes
-  vars:
-    skip_package_confirmation: true
+
+# You can set vars from here if required. However it's recommended to use inventory/hostvars/group vars files.
+#  vars:
 #    wg_port: 5555
 #    wg_iface: eth0
 #    wg_npeers: 2
