@@ -9,15 +9,14 @@ Following build instructions have been tested on Debian 11 Linux.
     and [toolchains from [toolchains.bootlin.com](https://toolchains.bootlin.com/) for ARM [musl](https://www.musl-libc.org/) builds.
   - Install Rust target platforms with `rustup target add <target>`. You can check targets list here: https://doc.rust-lang.org/nightly/rustc/platform-support.html.
 
-# . TODO . - not finished
+# TODO: WiP, doc unfinished.
 
-# cargo build --target armv7-unknown-linux-gnueabihf  --bin boringtun-cli --release
-# x86_64, TARGET=HOST
+# x86_64, TARGET=HOST, normal build
 cargo build --bin boringtun-cli --release
 cargo deb -p boringtun-cli -v --no-build
 cargo generate-rpm -p boringtun-cli --payload-compress gzip
 
-# musl x86_64
+# x86_64, use Musl (instead of glibc)
 cargo build --target x86_64-unknown-linux-musl  --bin boringtun-cli --release
 cargo deb -p boringtun-cli -v --no-build --target x86_64-unknown-linux-musl --deb-revision musl
 cargo generate-rpm -p boringtun-cli --payload-compress gzip --target x86_64-unknown-linux-musl --variant=musl
@@ -28,6 +27,6 @@ cargo deb -p boringtun-cli -v --no-build --target armv7-unknown-linux-gnueabihf
 cargo generate-rpm -p boringtun-cli --payload-compress gzip --target armv7-unknown-linux-gnueabihf
 
 # ARMv7, MUSL EABI HF
-CC='/home/nstorm/armv7-eabihf--musl--stable-2023.08-1/bin/arm-buildroot-linux-musleabihf-gcc' CARGO_TARGET_ARMV7_UNKNOWN_LINUX_MUSLEABIHF_LINKER="/home/nstorm/armv7-eabihf--musl--stable-2023.08-1/bin/arm-buildroot-linux-musleabihf-gcc" cargo build --bin boringtun-cli --release --target armv7-unknown-linux-musleabihf
+CC='~/armv7-eabihf--musl--stable-2023.08-1/bin/arm-buildroot-linux-musleabihf-gcc' CARGO_TARGET_ARMV7_UNKNOWN_LINUX_MUSLEABIHF_LINKER="/home/nstorm/armv7-eabihf--musl--stable-2023.08-1/bin/arm-buildroot-linux-musleabihf-gcc" cargo build --bin boringtun-cli --release --target armv7-unknown-linux-musleabihf
 cargo deb -p boringtun-cli -v --no-build --target armv7-unknown-linux-musleabihf --deb-revision musl
 cargo generate-rpm -p boringtun-cli --payload-compress gzip --target armv7-unknown-linux-musleabihf --variant musl
