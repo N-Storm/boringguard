@@ -7,9 +7,9 @@ a kernel module to work. This makes it possible to run it under container-type V
 kernel modules. Consequently, you can operate your Wireguard private VPN server even on cheap NAT VPS. However, it has to be TUN/TAP enabled (most providers
 have an option to enable it).
 
-This role comes with pre-compiled `boringtun-cli` binaries, packaged in deb and rpm formats. It's an unmodified builds from sources as is. They are bundled as
-binary packages with the playbook because most (if not all) Linux distros lacks them in repos. And I wasn't able to find them in 3rd party trusted repos either.
-It's actually most significant reason I created this role for my purposes and decided to share it afterward. But if you're skeptical on using my binary builds,
+This role comes with pre-compiled `boringtun-cli` binaries, packaged in deb and rpm formats. They are unmodified builds from sources as is. They are bundled as
+binary packages with the playbook because most (if not all) Linux distros lack them in their repos. And I wasn't able to find them in 3rd party trusted repos either.
+It's actually the most significant reason I created this role for my purposes and decided to share it afterward. But if you're skeptical about using my binary builds,
 you can build and package your own binaries. Instructions for building those can be found [here](BUILD.md).
 
 This role comes with x86_64 and ARM (armv7 hardfloat and aarch64) packages. Thus, it's possible to install on SBCs like Raspberry Pi, Orange Pi, etc., and on
