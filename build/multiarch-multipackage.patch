@@ -1,0 +1,64 @@
+diff -urN boringtun/boringtun-cli/Cargo.toml boringtun-patched/boringtun-cli/Cargo.toml
+--- boringtun/boringtun-cli/Cargo.toml	2024-01-30 11:45:33.536000735 +0300
++++ boringtun-patched/boringtun-cli/Cargo.toml	2024-01-30 11:40:19.812000550 +0300
+@@ -8,6 +8,21 @@
+ documentation = "https://docs.rs/boringtun/0.5.2/boringtun/"
+ edition = "2021"
+ 
++[package.metadata.generate-rpm]
++assets = [
++    { source = "target/release/boringtun-cli", dest = "/usr/bin/boringtun-cli", mode = "755" }
++]
++
++[package.metadata.generate-rpm.variants.musl]
++assets = [
++    { source = "target/release/boringtun-cli", dest = "/usr/bin/boringtun-cli", mode = "755" }
++]
++release = "musl"
++
++[package.metadata.generate-rpm.variants.musl.requires]
++wireguard-tools = "*"
++# musl = "*"
++
+ [dependencies]
+ daemonize = "0.4.1"
+ clap = { version = "3.1.6", features = ["env"] }
+@@ -17,4 +32,4 @@
+ 
+ [dependencies.boringtun]
+ version = "0.5.2"
+-path = "../boringtun"
+\ No newline at end of file
++path = "../boringtun"
+diff -urN boringtun/.cargo/config.toml boringtun-patched/.cargo/config.toml
+--- boringtun/.cargo/config.toml	2024-01-30 11:45:28.456000732 +0300
++++ boringtun-patched/.cargo/config.toml	2024-01-30 11:40:58.340000573 +0300
+@@ -1,2 +1,17 @@
+ [target.'cfg(unix)']
+ runner = 'sudo -E'
++
++[target.armv7-unknown-linux-musleabihf]
++linker="/opt/armv7-eabihf--musl--stable-2023.11-1/bin/arm-buildroot-linux-musleabihf-gcc"
++ar="/opt/armv7-eabihf--musl--stable-2023.11-1/bin/arm-buildroot-linux-musleabihf-ar"
++strip={ path = "/opt/armv7-eabihf--musl--stable-2023.11-1/bin/arm-buildroot-linux-musleabihf-strip" }
++
++[target.aarch64-unknown-linux-gnu]
++linker="/usr/bin/aarch64-linux-gnu-gcc-12"
++ar="/usr/bin/aarch64-linux-gnu-ar"
++strip={ path = "/usr/bin/aarch64-linux-gnu-strip" }
++
++[target.aarch64-unknown-linux-musl]
++linker="/opt/aarch64--musl--stable-2023.11-1/bin/aarch64-buildroot-linux-musl-gcc"
++ar="/opt/aarch64--musl--stable-2023.11-1/bin/aarch64-buildroot-linux-musl-ar"
++strip={ path = "/opt/aarch64--musl--stable-2023.11-1/bin/aarch64-buildroot-linux-musl-strip" }
+diff -urN boringtun/Cargo.toml boringtun-patched/Cargo.toml
+--- boringtun/Cargo.toml	2024-01-30 11:45:28.456000732 +0300
++++ boringtun-patched/Cargo.toml	2024-01-30 11:40:19.812000550 +0300
+@@ -4,6 +4,7 @@
+ [profile.release]
+ lto = true        # Enable full link-time optimization.
+ codegen-units = 1 # Use only 1 codegen-unit to enable full optimizations.
++strip = "symbols"
+ 
+ [profile.bench]
+ lto = true        # Enable full link-time optimization.
