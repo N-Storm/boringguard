@@ -1,0 +1,36 @@
+---
+name: Docker Image CI
+
+on:
+  push:
+    branches: ["master", "N-Storm-CI-boringtun-packages"]
+  pull_request:
+    branches: ["master", "N-Storm-CI-boringtun-packages"]
+
+jobs:
+  build:
+    runs-on: self-hosted
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build the Docker image
+        run: docker build --file build/Dockerfile --tag boringtun-builds:$(date +%s) build/
+
+      - uses: actions/checkout@v3
+      - name: Build & exctract the BoringTun packages.
+        run: cd build; bash ./BUILD.sh
+
+      - uses: actions/cache@v4.0.1
+        name: Cache package files
+        with:
+          # A list of files, directories, and wildcard patterns to cache and restore
+          path: build/packages/*
+          # An explicit key for restoring and saving the cache
+          key: boringtun-packages
+          restore-keys: boringtun-packages
+          # The chunk size used to split up large files during upload, in bytes
+          upload-chunk-size: 500000 # optional
+          # An optional boolean when enabled, allows windows runners to save or restore caches that can be restored or saved respectively on other platforms
+          enableCrossOsArchive: true # optional, default is false
+          # Run the post step to save the cache even if another step before fails
+          save-always: false # optional, default is false
