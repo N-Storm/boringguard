@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v3
@@ -17,7 +17,7 @@ jobs:
         run: docker build --file build/Dockerfile --tag boringtun-builds:$(date +%s) build/
 
       - uses: actions/checkout@v3
-      - name: Build & exctract the BoringTun packages.
+      - name: Build & extract the BoringTun packages.
         run: cd build; bash ./BUILD.sh
 
       - uses: actions/cache@v4.0.1
@@ -34,3 +34,4 @@ jobs:
           enableCrossOsArchive: true # optional, default is false
           # Run the post step to save the cache even if another step before fails
           save-always: false # optional, default is false
+
