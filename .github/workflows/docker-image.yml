@@ -1,15 +1,14 @@
+---
 name: Docker Image CI
 
 on:
   push:
-    branches: [ "master" ]
+    branches: ["master", "N-Storm-CI-boringtun-packages"]
   pull_request:
-    branches: [ "master" ]
+    branches: ["master", "N-Storm-CI-boringtun-packages"]
 
 jobs:
-
   build:
-
     runs-on: self-hosted
 
     steps:
@@ -20,7 +19,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: Build & exctract the BoringTun packages.
         run: cd build; bash ./BUILD.sh
-          
+
       - uses: actions/cache@v4.0.1
         name: Cache package files
         with:
