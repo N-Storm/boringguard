@@ -1,6 +1,8 @@
 Building boringtun-cli Packages from Source
 ===========================================
 
+[![Docker Image CI](https://github.com/N-Storm/boringguard/actions/workflows/docker-image.yml/badge.svg)](https://github.com/N-Storm/boringguard/actions/workflows/docker-image.yml)
+
 This directory contains scripts to build [Boringtun](https://github.com/cloudflare/boringtun) from sources. It has been tested on Debian 11 & 12 but should also work on Ubuntu.
 The entire build process is done within Docker containers and is as simple as running the `BUILD.sh` script. This script will download all prerequisites, including build tools, toolchains, etc.
 Once built, the packages will be "extracted" from the container to the `./packages` directory.
