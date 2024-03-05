@@ -21,19 +21,17 @@ jobs:
     - name: Build & exctract the BoringTun packages.
       run: cd build; bash ./BUILD.sh
           
-    - name: Cache package files
     - uses: actions/cache@v4.0.1
+    - name: Cache package files
       with:
       # A list of files, directories, and wildcard patterns to cache and restore
         path: build/packages/*
         # An explicit key for restoring and saving the cache
         key: boringtun-packages
+        restore-keys: boringtun-packages
         # The chunk size used to split up large files during upload, in bytes
         upload-chunk-size: 500000 # optional
         # An optional boolean when enabled, allows windows runners to save or restore caches that can be restored or saved respectively on other platforms
         enableCrossOsArchive: true # optional, default is false
         # Run the post step to save the cache even if another step before fails
         save-always: false # optional, default is false
-        
-
-      
