@@ -12,11 +12,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4.1.1
       - name: Build the Docker image
         run: docker build --file build/Dockerfile --tag boringtun-builds:$(date +%s) build/
 
-      - uses: actions/checkout@v3
+      # - uses: actions/checkout@v3
       - name: Build & extract the BoringTun packages.
         run: cd build; bash ./BUILD.sh
 
