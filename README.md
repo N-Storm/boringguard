@@ -34,6 +34,8 @@ The execution of this playbook has been tested on Debian 11 & 12 as the Ansible 
 Usage
 -----
 
+If you aren't familiar with Ansible or looking for a quick start, take a look at this guide: [QUICKSTART.md](QUICKSTART.md).
+
 Install `ansible` & `qrencode` packages. Make sure you have the ansible.posix collection installed (`ansible-galaxy collection list`). Debian 11, 12 will have it
 installed with the ansible package (you can check this with `ansible-galaxy collection list`).
 
