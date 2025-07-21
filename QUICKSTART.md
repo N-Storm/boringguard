@@ -2,19 +2,19 @@
 ```bash
 sudo apt install ansible git qrencode sshpass
 ```
-3. Prepare directories for ansible role and config storage:
+2. Prepare directories for ansible role and config storage:
 ```bash
 mkdir -p ansible/roles ansible/configs/wireguard
 ```
-5. Clone git repo into ansible/roles:
+3. Clone git repo into ansible/roles:
 ```bash
 cd ansible/roles && git clone https://github.com/N-Storm/boringguard/ && cd ..
 ```
-7. Copy example playbook for the role (should be in `ansible` directory right now):
+4. Copy example playbook for the role (should be in `ansible` directory right now):
 ```bash
 cp roles/boringguard/boringguard.yaml .
 ```
-9. Check & modify vars inside ansible/boringguard.yaml if required. It will work with defaults as is. But you might want to modify defaults. Uncomment `vars: ` section and any of the `wg_port`, `wg_iface` or `wg_npeers` lines you want to modify:
+5. Check & modify vars inside ansible/boringguard.yaml if required. It will work with defaults as is. But you might want to modify defaults. Uncomment `vars: ` section and any of the `wg_port`, `wg_iface` or `wg_npeers` lines you want to modify:
   * **wg_port** sets WireGuard port. Default: 51820
   * **wg_iface** sets network interface interface WireGuard will listen on. Default: eth0
   * **wg_npeers** sets number of WireGuard peers (clients) what will be created during setup. On first run they will be named Peer<N>, you can change names later if required. Default: 2
