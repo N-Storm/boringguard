@@ -1,5 +1,5 @@
 # 1. This tells docker to use the Rust official image
-FROM rust:1.75.0 as builder
+FROM rust:1.88.0 as builder
 
 # Installing prerequisites & boringtun source tree
 WORKDIR /usr/src
