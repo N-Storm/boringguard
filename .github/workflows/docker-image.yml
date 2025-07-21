@@ -14,5 +14,12 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+
       - name: Build BoringTun packages.
         run: cd build; bash ./BUILD.sh
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: boringtun-packages
+          path: build/packages/*
